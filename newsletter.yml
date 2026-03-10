@@ -1,0 +1,34 @@
+name: Daily Newsletter — 8 AM
+
+on:
+  schedule:
+    - cron: '30 2 * * *'  # 8:00 AM IST (UTC+5:30 = 02:30 UTC)
+  workflow_dispatch:       # Also allows manual trigger from GitHub
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests python-dateutil
+
+      - name: Generate newsletter
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python scripts/generate.py
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output
+          keep_files: false
